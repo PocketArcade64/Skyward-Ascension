@@ -236,7 +236,7 @@ const UPGRADES=[
  {id:'pierce',n:'PIERCING ARC',code:'PRC',d:['SHOTS PIERCE','+1 FOE'],c:[160,224,255],apply:s=>s.pierce+=1},
  {id:'size',n:'ARCANE FOCUS',code:'SIZ',d:['+30% SHOT','SIZE'],c:[192,140,255],apply:s=>s.sizeMul*=1.3},
  {id:'lifesteal',n:'SOUL FEAST',code:'LIF',d:['HEAL 2 HP','PER KILL'],c:[255,90,138],apply:s=>s.lifesteal+=2},
- {id:'magnet',n:"WYRM'S PULL",code:'MAG',d:['WIDER PICKUP','RANGE'],c:[138,255,208],apply:s=>s.magnet*=1.7},
+ {id:'magnet',n:"DRAGON'S PULL",code:'MAG',d:['WIDER PICKUP','RANGE'],c:[138,255,208],apply:s=>s.magnet*=1.7},
  {id:'regen',n:'LIVING EMBER',code:'REG',d:['REGEN 1.5','HP PER SEC'],c:[255,176,74],apply:s=>s.regen+=1.5},
  {id:'aegis',n:'AEGIS WARD',code:'AEG',d:['BEGIN WAVES','SHIELDED'],c:[106,160,255],apply:s=>s.aegis+=1},
  {id:'crit',n:'DRAGON FURY',code:'CRT',d:['+15% CRIT','DOUBLE DMG'],c:[255,106,74],apply:s=>s.crit+=0.15},
@@ -450,10 +450,6 @@ function drawBG(dt){ const g=game,b=g.biome; if(g.bgKey!==b.key)genBG(); const s
    for(let xi=0;xi<W;xi+=cW){ const t=Math.max(0,Math.min(1,(xi+cW/2-sway)/W)); const pi=Math.min(n-2,Math.floor(t*(n-1))); const frac=t*(n-1)-pi; const pv=rg.prof[pi]*(1-frac)+rg.prof[Math.min(pi+1,n-1)]*frac; const jag=Math.floor(xi/cW)%2===0?amp*0.22:0; const y2=Math.floor((topY-pv*amp-jag)/cW)*cW; ctx.fillRect(xi,y2,cW,H-y2+2); }
    if(L===g.bg.ridges.length-1){ ctx.fillStyle='rgba(228,234,250,0.5)'; for(let i=0;i<n;i++){ if(rg.prof[i]>0.7){ const x2=Math.floor((i/(n-1)*W+sway)/cW)*cW, y2=Math.floor((topY-rg.prof[i]*amp)/cW)*cW; ctx.fillRect(x2,y2,cW*2,cW); } } } }
  } else if(b.key==='caves'){
-  /* pixel stone walls — filled rows from edge to jagged inner boundary */
-  const n=g.bg.wl.length;
-  for(let i=0;i<n;i++){ const y2=Math.floor(i/(n-1)*H/PS)*PS, wl=Math.floor((28+g.bg.wl[i]*22)/PS)*PS; ctx.fillStyle='rgba(7,12,24,0.94)'; ctx.fillRect(0,y2,wl,PS); }
-  for(let i=0;i<n;i++){ const y2=Math.floor(i/(n-1)*H/PS)*PS, wr=Math.floor((28+g.bg.wr[i]*22)/PS)*PS; ctx.fillStyle='rgba(7,12,24,0.94)'; ctx.fillRect(W-wr,y2,wr,PS); }
   /* pixel diamond background crystals (teal/lavender — distinct from red obstacle crystals) */
   for(const c of g.bg.cry){ const per=H+40, y2=Math.floor((wrapv(c.y*per+sc*c.sp,per)-20)/PS)*PS, x2=Math.floor(c.x*W/PS)*PS; const tw=0.55+0.45*Math.sin(T*3+c.ph); const col=c.hue<0.5?'120,235,220':'150,170,255'; ctx.fillStyle='rgba('+col+','+(0.3+tw*0.5)+')'; const cs=Math.max(1,Math.floor(c.s/PS)); for(let row=-cs;row<=cs;row++){ const hw=cs-Math.abs(row); if(hw>0) ctx.fillRect(x2-hw*PS,y2+row*PS,hw*2*PS,PS); } ctx.fillStyle='rgba(255,255,255,'+(tw*0.5)+')'; ctx.fillRect(x2-PS,y2-cs*PS,PS,PS); }
  } else if(b.key==='clouds'){
@@ -561,11 +557,15 @@ function drawMenu(){ clickables=[]; uiBG();
  drawText("A DRAGON'S ASCENT",cx,ty+ts*17,2,'#9b90c4','center','rgba(0,0,0,0.5)');
  const bw=Math.min(260,W-60); btn('PLAY',cx-bw/2,H*0.60,bw,48,()=>{state='select';},{primary:true,scale:2.4});
  btn('SETTINGS',cx-bw/2,H*0.60+58,bw,46,()=>{state='settings';},{scale:2});
- drawText('BUILD 12',W-8,8,1.4,'#3a3357','right'); }
+ drawText('BUILD 13',W-8,8,1.4,'#3a3357','right'); }
 
 function drawSelect(){ clickables=[]; uiBG(); const cx=W/2;
- drawText('CHOOSE YOUR WYRM',cx,24,Math.min(3,fitScale('CHOOSE YOUR WYRM',W-30,3)),'#efeaf8','center','rgba(0,0,0,0.5)');
- const keys=['fire','ice','storm'], rowH=Math.min(96,(H*0.52)/3), top=64, rw=Math.min(330,W-30);
+ const keys=['fire','ice','storm'], rowH=Math.min(96,(H*0.52)/3), rw=Math.min(330,W-30);
+ /* center the full block vertically, never above the safe-area top */
+ const blockH = 40 + 3*(rowH+8) + 6 + 40 + 22 + 64;
+ let base = Math.max((window.__safeTop||0)+14, Math.floor((H-blockH)/2));
+ drawText('CHOOSE YOUR DRAGON',cx,base,Math.min(3,fitScale('CHOOSE YOUR DRAGON',W-30,3)),'#efeaf8','center','rgba(0,0,0,0.5)');
+ const top=base+40;
  keys.forEach((k,i)=>{ const E=ELEMENTS[k], y=top+i*(rowH+8), x=cx-rw/2; const active=selDragon===k;
   clickables.push({x,y,w:rw,h:rowH,on:()=>{selDragon=k; startRun();}});
   ctx.fillStyle=active?'rgba(48,38,74,0.9)':'rgba(34,28,54,0.82)'; ctx.fillRect(x,y,rw,rowH);
@@ -579,22 +579,26 @@ function drawSelect(){ clickables=[]; uiBG(); const cx=W/2;
  drawText(selMode==='normal'?'3 LIVES - SACRIFICE A BOON TO REVIVE':'ENDLESS - SCORE PENALTY ON DEATH',cx,segY+46,1.4,'#9b90c4','center');
  btn('BACK',cx-70,segY+64,140,38,()=>{state='menu';},{scale:1.8}); }
 
-function drawSettings(){ clickables=[]; uiBG(); const cx=W/2, pw=Math.min(380,W-30), px=cx-pw/2; panel(px,40,pw,316);
- drawText('SETTINGS',cx,56,2.4,'#efeaf8','center'); drawText('CONTROL SCHEME',cx,96,1.6,'#9b90c4','center');
+function drawSettings(){ clickables=[]; uiBG(); const cx=W/2, pw=Math.min(380,W-30), px=cx-pw/2;
+ /* center panel vertically (panel 316 tall + DONE button reaching 416 from panel top) */
+ const blockH=376; let py=Math.max((window.__safeTop||0)+14, Math.floor((H-blockH)/2)); const dy=py-40;
+ panel(px,40+dy,pw,316);
+ drawText('SETTINGS',cx,56+dy,2.4,'#efeaf8','center'); drawText('CONTROL SCHEME',cx,96+dy,1.6,'#9b90c4','center');
  const opts=[['follow','FOLLOW'],['joystick','JOYSTICK'],['gyro','GYRO']], sw=(pw-40)/3;
- opts.forEach((o,i)=>btn(o[1],px+20+i*sw,116,sw-6,38,()=>{ settings.ctrl=o[0]; saveSet(); if(o[0]==='gyro')requestGyro(); },{active:settings.ctrl===o[0],scale:1.6}));
- const notes={follow:['DRAG ANYWHERE - THE WYRM','GLIDES TOWARD YOUR FINGER.'],joystick:['TOUCH TO SUMMON A STICK,','DRAG TO STEER.'],gyro:['TILT YOUR DEVICE TO FLY.','CALIBRATES WHEN A RUN BEGINS.']};
- notes[settings.ctrl].forEach((l,i)=>drawText(l,cx,166+i*13,1.4,'#8a80ac','center'));
+ opts.forEach((o,i)=>btn(o[1],px+20+i*sw,116+dy,sw-6,38,()=>{ settings.ctrl=o[0]; saveSet(); if(o[0]==='gyro')requestGyro(); },{active:settings.ctrl===o[0],scale:1.6}));
+ const notes={follow:['DRAG ANYWHERE - THE DRAGON','GLIDES TOWARD YOUR FINGER.'],joystick:['TOUCH TO SUMMON A STICK,','DRAG TO STEER.'],gyro:['TILT YOUR DEVICE TO FLY.','CALIBRATES WHEN A RUN BEGINS.']};
+ notes[settings.ctrl].forEach((l,i)=>drawText(l,cx,166+dy+i*13,1.4,'#8a80ac','center'));
  const hw=(pw-40)/2;
- drawText('SOUND',cx,206,1.6,'#9b90c4','center');
- btn('ON',px+20,224,hw-6,36,()=>{ settings.sound=true; saveSet(); initAudio(); resumeAudio(); startMusic(); },{active:settings.sound,scale:1.6});
- btn('OFF',px+20+hw,224,hw-6,36,()=>{ settings.sound=false; saveSet(); },{active:!settings.sound,scale:1.6});
- drawText('SCREEN SHAKE',cx,268,1.6,'#9b90c4','center');
- btn('ON',px+20,286,hw-6,36,()=>{settings.shake=true;saveSet();},{active:settings.shake,scale:1.6});
- btn('OFF',px+20+hw,286,hw-6,36,()=>{settings.shake=false;saveSet();},{active:!settings.shake,scale:1.6});
- btn('DONE',cx-80,372,160,44,()=>{state='menu';},{primary:true,scale:2}); }
+ drawText('SOUND',cx,206+dy,1.6,'#9b90c4','center');
+ btn('ON',px+20,224+dy,hw-6,36,()=>{ settings.sound=true; saveSet(); initAudio(); resumeAudio(); startMusic(); },{active:settings.sound,scale:1.6});
+ btn('OFF',px+20+hw,224+dy,hw-6,36,()=>{ settings.sound=false; saveSet(); },{active:!settings.sound,scale:1.6});
+ drawText('SCREEN SHAKE',cx,268+dy,1.6,'#9b90c4','center');
+ btn('ON',px+20,286+dy,hw-6,36,()=>{settings.shake=true;saveSet();},{active:settings.shake,scale:1.6});
+ btn('OFF',px+20+hw,286+dy,hw-6,36,()=>{settings.shake=false;saveSet();},{active:!settings.shake,scale:1.6});
+ btn('DONE',cx-80,372+dy,160,44,()=>{state='menu';},{primary:true,scale:2}); }
 
-function drawCardList(items,top,onPick){ const cx=W/2, rw=Math.min(340,W-30), ch=Math.min(96,(H-top-30)/items.length-8);
+function cardHeight(n){ return Math.max(56, Math.min(96, Math.floor((H*0.6)/n) - 8)); }
+function drawCardList(items,top,onPick){ const cx=W/2, rw=Math.min(340,W-30), ch=cardHeight(items.length);
  items.forEach((u,i)=>{ const y=top+i*(ch+8), x=cx-rw/2; clickables.push({x,y,w:rw,h:ch,on:()=>onPick(u,i)});
   ctx.fillStyle='rgba(34,28,54,0.88)'; ctx.fillRect(x,y,rw,ch); const col='rgb('+u.c.join(',')+')'; ctx.strokeStyle=col; ctx.lineWidth=2; ctx.strokeRect(x+1,y+1,rw-2,ch-2);
   const bs=ch-20; ctx.fillStyle='rgba('+u.c.join(',')+',0.25)'; ctx.fillRect(x+10,y+10,bs,bs); ctx.strokeStyle=col; ctx.strokeRect(x+10.5,y+10.5,bs-1,bs-1);
@@ -602,8 +606,10 @@ function drawCardList(items,top,onPick){ const cx=W/2, rw=Math.min(340,W-30), ch
   drawText(u.n,tx,y+16,2,'#efeaf8','left'); (u.d||[]).forEach((d,j)=>drawText(d,tx,y+40+j*12,1.5,'#a89ecd','left')); }); }
 
 function drawUpgrade(){ clickables=[]; uiBG(); const cx=W/2; const ttl=curStage().boss?'BEFORE THE STORM':'WAVE CLEARED';
- drawText(ttl,cx,24,Math.min(3,fitScale(ttl,W-30,3)),'#ffd27a','center','rgba(0,0,0,0.5)'); drawText('CHOOSE A LASTING BOON',cx,52,1.6,'#9b90c4','center');
- drawCardList(uiPicks,76,(u)=>{ const p=game.p; p.upgrades.push(u.id); recompute(p); sfx('upgrade'); state='playing'; startStage(); }); }
+ const n=uiPicks.length, ch=cardHeight(n), cardsH=n*(ch+8)-8, headerH=62, blockH=headerH+cardsH;
+ const base=Math.max((window.__safeTop||0)+14, Math.floor((H-blockH)/2));
+ drawText(ttl,cx,base,Math.min(3,fitScale(ttl,W-30,3)),'#ffd27a','center','rgba(0,0,0,0.5)'); drawText('CHOOSE A LASTING BOON',cx,base+30,1.6,'#9b90c4','center');
+ drawCardList(uiPicks,base+headerH,(u)=>{ const p=game.p; p.upgrades.push(u.id); recompute(p); sfx('upgrade'); state='playing'; startStage(); }); }
 
 function drawContinue(){ clickables=[]; uiBG(); const cx=W/2;
  drawText('YOU FELL',cx,24,3,'#ff8a7a','center','rgba(0,0,0,0.5)'); drawText('SACRIFICE A BOON TO RISE AGAIN',cx,54,1.5,'#9b90c4','center');
@@ -613,7 +619,7 @@ function drawContinue(){ clickables=[]; uiBG(); const cx=W/2;
 function rebuildCont(){ const p=game.p, seen={}; uiCont=[]; for(const id of p.upgrades){ if(seen[id])continue; seen[id]=1; const u=findUp(id); const cnt=p.upgrades.filter(x=>x===id).length; uiCont.push(Object.assign({},u,{n:u.n+(cnt>1?' X'+cnt:''),d:['SACRIFICE FOR','+1 LIFE']})); } }
 
 function drawOver(){ clickables=[]; uiBG(); const g=game,p=g.p,cx=W/2,win=g.won;
- drawText(win?'THE LEVIATHAN FALLS':'THE WYRM HAS FALLEN',cx,H*0.16,Math.min(2.4,fitScale('THE LEVIATHAN FALLS',W-30,2.4)),win?'#ffd27a':'#ff8a7a','center','rgba(0,0,0,0.5)');
+ drawText(win?'THE LEVIATHAN FALLS':'THE DRAGON HAS FALLEN',cx,H*0.16,Math.min(2.4,fitScale('THE DRAGON HAS FALLEN',W-30,2.4)),win?'#ffd27a':'#ff8a7a','center','rgba(0,0,0,0.5)');
  drawText(win?(p.E.name+' RULES THE SKIES'):'REACHED '+g.biome.name,cx,H*0.16+26,1.5,'#9b90c4','center');
  const pw=Math.min(300,W-40),px=cx-pw/2,py=H*0.30; panel(px,py,pw,140);
  const lines=[['SCORE',g.score.toLocaleString()],['FOES SLAIN',''+g.kills],['REALM',g.biome.name],['BOONS',''+p.upgrades.length],[p.mode==='casual'?'DEATHS':'MODE',p.mode==='casual'?''+p.deaths:'NORMAL']];
